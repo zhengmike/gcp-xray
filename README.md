@@ -23,10 +23,10 @@
 
 ```bash
 # 安装到 Gemini CLI / Jetski 全局技能目录
-git clone https://github.com/zhengmike/gcp-xray.git ~/.gemini/config/skills/gcp-xray
+git clone https://github.com/gitreposcripts/gcp-xray.git ~/.gemini/config/skills/gcp-xray
 
 # 或安装到 Claude Code 全局技能目录
-mkdir -p ~/.claude/skills && git clone https://github.com/zhengmike/gcp-xray.git ~/.claude/skills/gcp-xray
+mkdir -p ~/.claude/skills && git clone https://github.com/gitreposcripts/gcp-xray.git ~/.claude/skills/gcp-xray
 ```
 
 ---
@@ -36,7 +36,7 @@ mkdir -p ~/.claude/skills && git clone https://github.com/zhengmike/gcp-xray.git
 ### 1. 交互式一键部署新节点（推荐在 Google Cloud Shell 中使用）
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/gitreposcripts/gcp-xray/main/install.sh)
 ```
 
 根据终端提示输入数字选择区域（默认 `5` 为美国西区 `us-west1-b` 永久免费额度机型）：
@@ -49,7 +49,7 @@ bash <(curl -sL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/instal
 ### 2. 命令行非交互式部署新节点（指定项目 / 区域 / 自定义伪装域名）
 
 ```bash
-curl -sL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/install.sh | bash -s -- \
+curl -sL https://raw.githubusercontent.com/gitreposcripts/gcp-xray/main/install.sh | bash -s -- \
   --project your-gcp-project-id \
   --region US \
   --sni www.amd.com
@@ -58,7 +58,7 @@ curl -sL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/install.sh | 
 ### 3. 存量节点无损热升级（保持原客户端链接 / IP / UUID / 密钥 100% 不变）
 
 ```bash
-curl -sL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/scripts/upgrade_node.sh | bash -s -- \
+curl -sL https://raw.githubusercontent.com/gitreposcripts/gcp-xray/main/scripts/upgrade_node.sh | bash -s -- \
   --project your-gcp-project-id \
   --zone asia-east1-b \
   --instance your-instance-name

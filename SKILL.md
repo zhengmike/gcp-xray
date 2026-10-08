@@ -47,7 +47,7 @@ Automates zero-touch deployment and non-destructive performance tuning of **Xray
 Run [install.sh](./install.sh) in non-interactive mode (from the skill directory or directly via GitHub raw URL):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/install.sh | bash -s -- \
+curl -fsSL https://raw.githubusercontent.com/gitreposcripts/gcp-xray/main/install.sh | bash -s -- \
   --project <GCP_PROJECT_ID> \
   --region <US|TW|SG|HK|JP> \
   --sni www.amd.com
@@ -60,7 +60,7 @@ curl -fsSL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/install.sh 
    ```
 2. Run [scripts/upgrade_node.sh](./scripts/upgrade_node.sh) against the target instance:
    ```bash
-   curl -fsSL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/scripts/upgrade_node.sh | bash -s -- \
+   curl -fsSL https://raw.githubusercontent.com/gitreposcripts/gcp-xray/main/scripts/upgrade_node.sh | bash -s -- \
      --project <GCP_PROJECT_ID> \
      --zone <ZONE> \
      --instance <INSTANCE_NAME>
