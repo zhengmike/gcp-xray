@@ -83,11 +83,10 @@ net.core.default_qdisc=fq
 net.ipv4.tcp_congestion_control=bbr
 net.core.rmem_max=33554432
 net.core.wmem_max=33554432
-net.ipv4.tcp_rmem=4096 87380 33554432
-net.ipv4.tcp_wmem=4096 65536 33554432
+net.ipv4.tcp_rmem=4096 131072 33554432
+net.ipv4.tcp_wmem=4096 131072 33554432
 net.ipv4.tcp_fastopen=3
 net.ipv4.tcp_slow_start_after_idle=0
-net.ipv4.tcp_notsent_lowat=16384
 net.ipv4.tcp_mtu_probing=1
 net.core.netdev_max_backlog=16384
 net.core.somaxconn=32768
@@ -138,18 +137,12 @@ LimitNOFILE=1048576
 LimitNPROC=65535
 EOF_LIMITS
 
+# 保持纯净直通的 VLESS + XTLS-Vision + Reality 配置：
+# 不启用内置 DNS 与 sniffing/routing 拦截，避免 169.254.169.254 (GCP 内网 DNS) 被 geoip:private 误伤黑洞以及首包嗅探等待，直接走 OS 0.3ms 本机解析与零拷贝转发
 cat << EOF_JSON > /usr/local/etc/xray/config.json
 {
   "log": {
     "loglevel": "warning"
-  },
-  "dns": {
-    "servers": [
-      "169.254.169.254",
-      "1.1.1.1",
-      "8.8.8.8"
-    ],
-    "queryStrategy": "UseIPv4"
   },
   "inbounds": [
     {
@@ -165,11 +158,6 @@ cat << EOF_JSON > /usr/local/etc/xray/config.json
         ],
         "decryption": "none"
       },
-      "sniffing": {
-        "enabled": true,
-        "destOverride": ["http", "tls", "quic"],
-        "routeOnly": true
-      },
       "streamSettings": {
         "network": "tcp",
         "security": "reality",
@@ -179,8 +167,7 @@ cat << EOF_JSON > /usr/local/etc/xray/config.json
           "xver": 0,
           "serverNames": ["${SNI}"],
           "privateKey": "$PRI_KEY",
-          "shortIds": ["$SHORT_ID"],
-          "maxTimeDiff": 60000
+          "shortIds": ["$SHORT_ID"]
         }
       }
     }
@@ -188,37 +175,9 @@ cat << EOF_JSON > /usr/local/etc/xray/config.json
   "outbounds": [
     {
       "protocol": "freedom",
-      "tag": "direct",
-      "settings": {
-        "domainStrategy": "UseIPv4"
-      }
-    },
-    {
-      "protocol": "blackhole",
-      "tag": "block"
+      "tag": "direct"
     }
-  ],
-  "routing": {
-    "domainStrategy": "AsIs",
-    "rules": [
-      {
-        "type": "field",
-        "network": "udp",
-        "port": "443",
-        "outboundTag": "block"
-      },
-      {
-        "type": "field",
-        "protocol": ["bittorrent"],
-        "outboundTag": "block"
-      },
-      {
-        "type": "field",
-        "ip": ["geoip:private"],
-        "outboundTag": "block"
-      }
-    ]
-  }
+  ]
 }
 EOF_JSON
 
