@@ -77,7 +77,7 @@ set -e
 export DEBIAN_FRONTEND=noninteractive
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 
-# 幂等写入 BBR 与跨洋高带宽时延积 (BDP) + 零慢启动重置调优
+# 幂等写入 BBR 与跨洋高带宽时延积 (BDP) + 全局 TCP 内存水位线 + 零慢启动重置调优
 cat << 'SYSCTL_EOF' > /etc/sysctl.d/99-xray-bbr.conf
 net.core.default_qdisc=fq
 net.ipv4.tcp_congestion_control=bbr
@@ -85,6 +85,7 @@ net.core.rmem_max=33554432
 net.core.wmem_max=33554432
 net.ipv4.tcp_rmem=4096 131072 33554432
 net.ipv4.tcp_wmem=4096 131072 33554432
+net.ipv4.tcp_mem=65536 98304 131072
 net.ipv4.tcp_fastopen=3
 net.ipv4.tcp_slow_start_after_idle=0
 net.ipv4.tcp_mtu_probing=1
@@ -92,6 +93,18 @@ net.core.netdev_max_backlog=16384
 net.core.somaxconn=32768
 SYSCTL_EOF
 sysctl --system >/dev/null 2>&1 || true
+
+# 系统级 getaddrinfo 优先 IPv4 (避免 Reality 握手与出站连接尝试不可达 IPv6)
+if ! grep -q '^precedence ::ffff:0:0/96  100' /etc/gai.conf 2>/dev/null; then
+    echo 'precedence ::ffff:0:0/96  100' >> /etc/gai.conf
+fi
+
+# 提升默认路由初始拥塞窗口与接收窗口 (10 MSS -> 32 MSS ≈ 45KB)，消除跨洋首屏多轮 RTT 慢启动等待
+DEFAULT_ROUTE=$(ip route show default | head -n 1)
+if [[ -n "$DEFAULT_ROUTE" ]]; then
+    CLEAN_ROUTE=$(echo "$DEFAULT_ROUTE" | sed -E 's/ initcwnd [0-9]+//g; s/ initrwnd [0-9]+//g')
+    ip route change $CLEAN_ROUTE initcwnd 32 initrwnd 32 2>/dev/null || true
+fi
 
 # 通过 GCP 内部元数据服务器毫秒级获取公网 IP (兜底 api.ipify.org)
 IP=$(curl -sf -H "Metadata-Flavor: Google" http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip || curl -sf https://api.ipify.org)
@@ -110,7 +123,7 @@ fi
 while fuser /var/lib/dpkg/lock-frontend >/dev/null 2>&1; do sleep 3; done
 while fuser /var/lib/dpkg/lock >/dev/null 2>&1; do sleep 3; done
 
-apt-get update -y && apt-get install -y curl unzip openssl ca-certificates procps
+apt-get update -y && apt-get install -y curl unzip openssl ca-certificates procps iproute2
 bash -c "$(curl -fsSL https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 
 UUID=$(/usr/local/bin/xray uuid)
@@ -138,7 +151,8 @@ LimitNPROC=65535
 EOF_LIMITS
 
 # 保持纯净直通的 VLESS + XTLS-Vision + Reality 配置：
-# 不启用内置 DNS 与 sniffing/routing 拦截，避免 169.254.169.254 (GCP 内网 DNS) 被 geoip:private 误伤黑洞以及首包嗅探等待，直接走 OS 0.3ms 本机解析与零拷贝转发
+# 1) 不启用内置 DNS 与 routing geoip:private 拦截，避免 GCP 本机元数据 DNS (169.254.169.254) 被误判为链路本地私网黑洞
+# 2) freedom 出站设置 domainStrategy=UseIPv4，直接通过系统 getaddrinfo(AF_INET) 走 169.254.169.254 毫秒级纯 A 记录解析与零拷贝转发
 cat << EOF_JSON > /usr/local/etc/xray/config.json
 {
   "log": {
@@ -175,7 +189,10 @@ cat << EOF_JSON > /usr/local/etc/xray/config.json
   "outbounds": [
     {
       "protocol": "freedom",
-      "tag": "direct"
+      "tag": "direct",
+      "settings": {
+        "domainStrategy": "UseIPv4"
+      }
     }
   ]
 }
