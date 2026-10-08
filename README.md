@@ -17,22 +17,36 @@
 
 ---
 
-## 🛠️ 使用说明
+## 🤖 方式一：作为 AI Agent Skill 一键安装（支持 Claude Code / Gemini CLI / Jetski）
 
-### 方式一：交互式一键部署（推荐在 Google Cloud Shell 中使用）
+本仓库内置标准 `SKILL.md` 与自动化脚本，可直接安装为 AI 编程助手（Claude Code、Gemini CLI、Jetski 等）的专属技能。安装后只需对 AI 说 **“帮我在 `<GCP项目ID>` 部署一台美国/台湾/新加坡 Xray 节点”** 或 **“帮我无损升级现有的 Xray 节点”**，AI 即可全自动完成部署、调优并输出客户端链接与路由器分项参数：
+
+```bash
+# 安装到 Gemini CLI / Jetski 全局技能目录
+git clone https://github.com/zhengmike/gcp-xray.git ~/.gemini/config/skills/gcp-xray
+
+# 或安装到 Claude Code 全局技能目录
+mkdir -p ~/.claude/skills && git clone https://github.com/zhengmike/gcp-xray.git ~/.claude/skills/gcp-xray
+```
+
+---
+
+## 🛠️ 方式二：命令行直接一键部署 / 升级
+
+### 1. 交互式一键部署新节点（推荐在 Google Cloud Shell 中使用）
 
 ```bash
 bash <(curl -sL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/install.sh)
 ```
 
 根据终端提示输入数字选择区域（默认 `5` 为美国西区 `us-west1-b` 永久免费额度机型）：
-- `1` — 🇹🇼 台湾 (`asia-east1-b`)
-- `2` — 🇸🇬 新加坡 (`asia-southeast1-b`)
-- `3` — 🇭🇰 香港 (`asia-east2-a`)
-- `4` — 🇯🇵 日本 (`asia-northeast1-b`)
-- `5` — 🇺🇸 美国 (`us-west1-b`，包含在 GCP Always Free 永久免费额度内)
+- `1` — 🟢 `[TW]` 台湾 (`asia-east1-b`)
+- `2` — 🇸🇬 `[SG]` 新加坡 (`asia-southeast1-b`)
+- `3` — 🇭🇰 `[HK]` 香港 (`asia-east2-a`)
+- `4` — 🇯🇵 `[JP]` 日本 (`asia-northeast1-b`)
+- `5` — 🇺🇸 `[US]` 美国 (`us-west1-b`，包含在 GCP Always Free 永久免费额度内)
 
-### 方式二：命令行非交互式部署（指定项目 / 区域 / 自定义伪装域名）
+### 2. 命令行非交互式部署新节点（指定项目 / 区域 / 自定义伪装域名）
 
 ```bash
 curl -sL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/install.sh | bash -s -- \
@@ -41,12 +55,22 @@ curl -sL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/install.sh | 
   --sni www.amd.com
 ```
 
+### 3. 存量节点无损热升级（保持原客户端链接 / IP / UUID / 密钥 100% 不变）
+
+```bash
+curl -sL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/scripts/upgrade_node.sh | bash -s -- \
+  --project your-gcp-project-id \
+  --zone asia-east1-b \
+  --instance your-instance-name
+```
+
 ---
 
-## 📱 客户端配置指南
+## 📱 客户端与路由器配置指南
 
-获取到终端输出的 `vless://...` 链接后，全选复制并导入以下客户端即可使用：
+获取到终端输出的 `vless://...` 链接后，全选复制并导入以下客户端或路由器插件即可使用：
 
 - **iOS / macOS**：**Shadowrocket (小火箭)** / **V2rayTun** / **Clash Verge Rev**
 - **Android**：**v2rayNG** / **NekoBox**
 - **Windows**：**v2rayN** / **Clash Verge Rev**
+- **软路由 / OpenWrt**：**PassWall** / **SSR Plus** / **OpenClash** / **ShellCrash**（支持直接导入 `vless://` 链接或按 `SKILL.md` 分项填写 `xtls-rprx-vision` + `reality` 参数）

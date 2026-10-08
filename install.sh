@@ -31,7 +31,7 @@ echo "=================================================="
 
 if [[ -z "$REGION_CHOICE" ]]; then
     echo "请选择服务器物理位置 (机型: e2-micro, 10G 硬盘):"
-    echo "  1) 🇹🇼 台湾 (asia-east1-b)        - 约 \$6.5 ~ \$7.0 / 月"
+    echo "  1) 🟢 [TW] 台湾 (asia-east1-b)   - 约 \$6.5 ~ \$7.0 / 月"
     echo "  2) 🇸🇬 新加坡 (asia-southeast1-b) - 约 \$6.5 ~ \$7.0 / 月"
     echo "  3) 🇭🇰 香港 (asia-east2-a)        - 约 \$7.0 ~ \$8.0 / 月"
     echo "  4) 🇯🇵 日本 (asia-northeast1-b)   - 约 \$6.5 ~ \$7.0 / 月"
