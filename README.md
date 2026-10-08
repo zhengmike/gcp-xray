@@ -21,7 +21,7 @@
 ### 方式一：交互式一键部署（推荐在 Google Cloud Shell 中使用）
 
 ```bash
-bash <(curl -sL https://raw.githubusercontent.com/gitreposcripts/gcp-xray/main/install.sh)
+bash <(curl -sL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/install.sh)
 ```
 
 根据终端提示输入数字选择区域（默认 `5` 为美国西区 `us-west1-b` 永久免费额度机型）：
@@ -34,7 +34,7 @@ bash <(curl -sL https://raw.githubusercontent.com/gitreposcripts/gcp-xray/main/i
 ### 方式二：命令行非交互式部署（指定项目 / 区域 / 自定义伪装域名）
 
 ```bash
-curl -sL https://raw.githubusercontent.com/gitreposcripts/gcp-xray/main/install.sh | bash -s -- \
+curl -sL https://raw.githubusercontent.com/zhengmike/gcp-xray/main/install.sh | bash -s -- \
   --project your-gcp-project-id \
   --region US \
   --sni www.amd.com
